@@ -1,13 +1,10 @@
 #!/bin/sh
 
-# Start the server in the background
-cd /app/server && node . &
+# Replace environment variables in nginx.conf
+envsubst '${PORT}' < /etc/nginx/nginx.conf > /etc/nginx/conf.d/default.conf
 
-# Use PORT from environment or default to 4200
-export PORT=${PORT:-4200}
+# Start nginx in the background
+nginx -g 'daemon off;' &
 
-# Replace $PORT in nginx config with actual port
-sed -i "s/\$PORT/$PORT/g" /etc/nginx/conf.d/default.conf
-
-# Start nginx
-nginx -g 'daemon off;'
+# Start the Node.js server
+cd /app/server && node main.js
