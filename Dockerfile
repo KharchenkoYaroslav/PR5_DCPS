@@ -27,23 +27,33 @@ FROM nginx:alpine
 # Copy client files
 COPY --from=client-builder /app/dist/apps/client /usr/share/nginx/html
 
-# Setup nginx config
-RUN echo 'server { \
-    listen $PORT; \
-    server_name localhost; \
-    root /usr/share/nginx/html; \
-    index index.html; \
-    location / { \
-        try_files $uri $uri/ /index.html; \
-    } \
-    location /api/ { \
-        proxy_pass http://localhost:3000; \
-        proxy_http_version 1.1; \
-        proxy_set_header Upgrade $http_upgrade; \
-        proxy_set_header Connection "upgrade"; \
-        proxy_set_header Host $host; \
-    } \
-}' > /etc/nginx/conf.d/default.conf
+# Setup nginx config with optimized settings
+RUN echo 'worker_processes 2;\n\
+events {\n\
+    worker_connections 1024;\n\
+}\n\
+http {\n\
+    include /etc/nginx/mime.types;\n\
+    default_type application/octet-stream;\n\
+    sendfile on;\n\
+    keepalive_timeout 65;\n\
+    server {\n\
+        listen $PORT;\n\
+        server_name localhost;\n\
+        root /usr/share/nginx/html;\n\
+        index index.html;\n\
+        location / {\n\
+            try_files $uri $uri/ /index.html;\n\
+        }\n\
+        location /api/ {\n\
+            proxy_pass http://localhost:3000;\n\
+            proxy_http_version 1.1;\n\
+            proxy_set_header Upgrade $http_upgrade;\n\
+            proxy_set_header Connection "upgrade";\n\
+            proxy_set_header Host $host;\n\
+        }\n\
+    }\n\
+}' > /etc/nginx/nginx.conf
 
 # Install Node.js
 RUN apk add --update nodejs npm
