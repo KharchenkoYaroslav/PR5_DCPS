@@ -1,5 +1,5 @@
 # Build client
-FROM node:lts-alpine as client-builder
+FROM node:18 as client-builder
 
 WORKDIR /app
 COPY package*.json ./
@@ -8,12 +8,14 @@ COPY tsconfig*.json ./
 COPY libs ./libs
 COPY apps/client ./apps/client
 
-# Install dependencies with optimizations
-RUN npm install --no-audit --no-fund --production=false
+# Install dependencies with more memory
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN npm install --legacy-peer-deps
+
 RUN npx nx build client
 
 # Build server
-FROM node:lts-alpine as server-builder
+FROM node:18 as server-builder
 
 WORKDIR /app
 COPY package*.json ./
@@ -22,8 +24,10 @@ COPY tsconfig*.json ./
 COPY libs ./libs
 COPY apps/server ./apps/server
 
-# Install dependencies with optimizations
-RUN npm install --no-audit --no-fund --production=false
+# Install dependencies with more memory
+ENV NODE_OPTIONS="--max-old-space-size=4096"
+RUN npm install --legacy-peer-deps
+
 RUN npx nx build server
 
 # Final image with both services
@@ -56,7 +60,7 @@ RUN apk add --update nodejs npm
 # Setup server
 WORKDIR /app
 COPY --from=server-builder /app/dist/apps/server ./server
-RUN cd server && npm install --omit=dev --no-audit --no-fund
+RUN cd server && npm install --omit=dev --legacy-peer-deps
 
 # Start both services
 COPY start.sh /start.sh
