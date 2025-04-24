@@ -1,33 +1,24 @@
 # Build client
-FROM node:18 as client-builder
+FROM node:18 as deps
 
 WORKDIR /app
 COPY package*.json ./
-COPY nx.json ./
-COPY tsconfig*.json ./
-COPY libs ./libs
-COPY apps/client ./apps/client
 
-# Install dependencies with more memory
-ENV NODE_OPTIONS="--max-old-space-size=4096"
+# Install dependencies in a separate layer
+RUN npm config set registry https://registry.npmjs.org/
 RUN npm install --legacy-peer-deps
 
+FROM node:18 as client-builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 RUN npx nx build client
 
 # Build server
 FROM node:18 as server-builder
-
 WORKDIR /app
-COPY package*.json ./
-COPY nx.json ./
-COPY tsconfig*.json ./
-COPY libs ./libs
-COPY apps/server ./apps/server
-
-# Install dependencies with more memory
-ENV NODE_OPTIONS="--max-old-space-size=4096"
-RUN npm install --legacy-peer-deps
-
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
 RUN npx nx build server
 
 # Final image with both services
