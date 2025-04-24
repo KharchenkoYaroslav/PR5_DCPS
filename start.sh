@@ -1,12 +1,12 @@
 #!/bin/sh
 
 # Set default PORT if not provided
-export PORT=${PORT:-80}
+export PORT=${PORT:-8080}
 
 echo "Configuring nginx for port ${PORT}..."
 
-# Replace environment variables in nginx.conf
-envsubst '${PORT}' < /etc/nginx/nginx.conf > /etc/nginx/conf.d/default.conf
+# Create nginx configuration with the correct port
+sed "s/listen 8080/listen ${PORT}/" /etc/nginx/nginx.conf > /etc/nginx/conf.d/default.conf
 
 # Verify nginx config
 echo "Verifying nginx configuration..."
