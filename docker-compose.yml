@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  server:
+    container_name: server
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=3000
+      - NODE_ENV=production
+
+  client:
+    container_name: client
+    build:
+      context: .
+      dockerfile: apps/client/Dockerfile
+    ports:
+      - "4200:4200"
+    depends_on:
+      - server
