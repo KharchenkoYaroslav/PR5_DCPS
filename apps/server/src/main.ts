@@ -14,13 +14,20 @@ async function bootstrap() {
 
   // Enable CORS for Vercel frontend
   app.enableCors({
-    origin: process.env.VERCEL_URL || 'http://localhost:4200',
-    methods: ['GET', 'POST'],
+    origin: [
+      'https://pr-5-dcps.vercel.app',
+      'http://localhost:4200',
+      /\.vercel\.app$/
+    ],
+    methods: ['GET', 'POST', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'Cache-Control'],
     credentials: true,
+    exposedHeaders: ['Content-Type'],
+    maxAge: 3600
   });
 
   const port = process.env.PORT || 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
   Logger.log(
     `🚀 Application is running on: http://localhost:${port}/${globalPrefix}`
   );

@@ -1,6 +1,7 @@
-import { Controller, Query, Sse, Param, Post, Get } from '@nestjs/common';
+import { Controller, Query, Sse, Param, Post, Get, MessageEvent } from '@nestjs/common';
 import { Observable } from 'rxjs';
-import { Point, GeneticAlgorithmParams, AlgorithmProgress } from '@my-workspace/shared';
+import { map } from 'rxjs/operators';
+import { Point, GeneticAlgorithmParams } from '@my-workspace/shared';
 import { AppService } from './app.service';
 
 @Controller()
@@ -36,10 +37,18 @@ export class TSPController {
     @Query('points') pointsJson: string,
     @Query('params') paramsJson: string,
     @Query('sessionId') sessionId: string,
-  ): Observable<{ data: AlgorithmProgress }> {
+  ): Observable<MessageEvent> {
     const points = JSON.parse(pointsJson) as Point[];
     const params = JSON.parse(paramsJson) as GeneticAlgorithmParams;
-    return this.appService.solveTSP(points, params, sessionId);
+
+    return this.appService.solveTSP(points, params, sessionId).pipe(
+      map(event => ({
+        data: event.data,
+        id: new Date().getTime().toString(),
+        retry: 15000,
+        type: 'message'
+      }))
+    );
   }
 
   @Post('stop/:sessionId')
