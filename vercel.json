@@ -1,0 +1,14 @@
+{
+  "buildCommand": "npx nx build client",
+  "outputDirectory": "dist/apps/client",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://$RAILWAY_URL/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

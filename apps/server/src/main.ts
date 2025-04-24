@@ -11,6 +11,14 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const globalPrefix = 'api';
   app.setGlobalPrefix(globalPrefix);
+
+  // Enable CORS for Vercel frontend
+  app.enableCors({
+    origin: process.env.VERCEL_URL || 'http://localhost:4200',
+    methods: ['GET', 'POST'],
+    credentials: true,
+  });
+
   const port = process.env.PORT || 3000;
   await app.listen(port);
   Logger.log(
