@@ -5,8 +5,6 @@ WORKDIR /app
 COPY package*.json ./
 COPY nx.json ./
 COPY tsconfig*.json ./
-COPY babel.config.json ./
-COPY .swcrc ./
 COPY libs ./libs
 COPY apps/client ./apps/client
 
@@ -20,8 +18,6 @@ WORKDIR /app
 COPY package*.json ./
 COPY nx.json ./
 COPY tsconfig*.json ./
-COPY babel.config.json ./
-COPY .swcrc ./
 COPY libs ./libs
 COPY apps/server ./apps/server
 
