@@ -8,7 +8,8 @@ COPY tsconfig*.json ./
 COPY libs ./libs
 COPY apps/client ./apps/client
 
-RUN npm ci
+# Install dependencies with optimizations
+RUN npm install --no-audit --no-fund --production=false
 RUN npx nx build client
 
 # Build server
@@ -21,7 +22,8 @@ COPY tsconfig*.json ./
 COPY libs ./libs
 COPY apps/server ./apps/server
 
-RUN npm ci
+# Install dependencies with optimizations
+RUN npm install --no-audit --no-fund --production=false
 RUN npx nx build server
 
 # Final image with both services
@@ -54,7 +56,7 @@ RUN apk add --update nodejs npm
 # Setup server
 WORKDIR /app
 COPY --from=server-builder /app/dist/apps/server ./server
-RUN cd server && npm install --omit=dev
+RUN cd server && npm install --omit=dev --no-audit --no-fund
 
 # Start both services
 COPY start.sh /start.sh
