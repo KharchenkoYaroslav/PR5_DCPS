@@ -3,21 +3,8 @@ import { Observable } from 'rxjs';
 import { Point, GeneticAlgorithmParams, AlgorithmProgress } from '@my-workspace/shared';
 import { AppService } from './app.service';
 
-@Controller()
-export class AppController {
-  constructor(private readonly appService: AppService) {}
-
-  @Get()
-  getHealth() {
-    return {
-      status: 'ok',
-      timestamp: new Date().toISOString()
-    };
-  }
-}
-
 @Controller('tsp')
-export class TSPController {
+export class AppController {
   constructor(private readonly appService: AppService) {}
 
   @Get('solve')
