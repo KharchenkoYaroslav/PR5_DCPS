@@ -24,14 +24,14 @@ RUN npx nx build server
 # Final image with both services
 FROM nginx:alpine
 
+# Install required packages
+RUN apk add --update nodejs npm gettext
+
 # Copy client files
 COPY --from=client-builder /app/dist/apps/client /usr/share/nginx/html
 
 # Copy nginx configuration
 COPY nginx.conf /etc/nginx/nginx.conf
-
-# Install Node.js
-RUN apk add --update nodejs npm
 
 # Setup server
 WORKDIR /app
