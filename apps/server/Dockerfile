@@ -1,9 +1,6 @@
 # Build stage
 FROM node:18-alpine as builder
 
-# Install necessary build tools
-RUN apk add --no-cache python3 make g++
-
 WORKDIR /app
 
 # Copy package files
