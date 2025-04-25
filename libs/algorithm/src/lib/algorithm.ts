@@ -30,7 +30,7 @@ export class TSPSolver {
   }
 
   // Оцінка придатності
-  private evaluateFitness(routes: Route[]): Route[] {
+  protected evaluateFitness(routes: Route[]): Route[] {
     return routes.map(route => ({
       ...route,
       distance: calculateDistance(this.points, route.path)
@@ -38,14 +38,14 @@ export class TSPSolver {
   }
 
   // Вибір батьків
-  private selectParents(population: Population): Route[] {
+  protected selectParents(population: Population): Route[] {
     const sortedRoutes = this.evaluateFitness(population.routes);
     const elite = sortedRoutes.slice(0, this.params.eliteSize);
     return elite;
   }
 
   // Створення нащадків
-  private createOffspring(parents: Route[]): Route[] {
+  protected createOffspring(parents: Route[]): Route[] {
     const offspring: Route[] = [];
     const requiredOffspring = this.params.populationSize - this.params.eliteSize;
 
@@ -53,8 +53,8 @@ export class TSPSolver {
       const parent1 = parents[Math.floor(Math.random() * parents.length)];
       const parent2 = parents[Math.floor(Math.random() * parents.length)];
 
-      let childPath = crossover(parent1.path, parent2.path);
-      childPath = mutate(childPath, this.params.mutationRate);
+      let childPath = this.crossover(parent1.path, parent2.path);
+      childPath = this.mutate(childPath, this.params.mutationRate);
 
       offspring.push({
         path: childPath,
@@ -65,7 +65,7 @@ export class TSPSolver {
   }
 
   // Вибір для наступної популяції
-  private selectNextGeneration(currentPopulation: Population): Population {
+  protected selectNextGeneration(currentPopulation: Population): Population {
     // Використовуємо поточні маршрути без сортування
     const parents = this.selectParents(currentPopulation);
     const offspring = this.createOffspring(parents);
@@ -81,8 +81,8 @@ export class TSPSolver {
   }
 
   // Перевірка умови зупинки
-  private shouldStop(populations: Population[], currentGen: number): boolean {
-    const MAX_GENERATIONS = 1000;  
+  protected shouldStop(populations: Population[], currentGen: number): boolean {
+    const MAX_GENERATIONS = 1000;
 
     if (this.params.generations === 'untilLastAlive' && currentGen > 0) {
       return this.hasConverged(populations) || currentGen >= MAX_GENERATIONS;
@@ -91,7 +91,7 @@ export class TSPSolver {
   }
 
   // Умова зупинки для випадку 'untilLastAlive'
-  private hasConverged(populations: Population[]): boolean {
+  protected hasConverged(populations: Population[]): boolean {
     const border = 0.5;
     return populations.every(pop => {
       const distanceCounts: Record<number, number> = {};
@@ -102,6 +102,45 @@ export class TSPSolver {
       const maxCount = Math.max(...Object.values(distanceCounts));
       return maxCount / pop.routes.length >= border;
     });
+  }
+
+  // Допоміжні методи для генетичних операцій
+  protected crossover(parent1: number[], parent2: number[]): number[] {
+    const start = Math.floor(Math.random() * parent1.length);
+    const end = Math.floor(Math.random() * (parent1.length - start)) + start;
+
+    const child = new Array(parent1.length).fill(-1);
+
+    for (let i = start; i <= end; i++) {
+      child[i] = parent1[i];
+    }
+
+    let parentIndex = 0;
+    for (let i = 0; i < child.length; i++) {
+      if (i >= start && i <= end) continue;
+
+      while (child.includes(parent2[parentIndex])) {
+        parentIndex++;
+      }
+      child[i] = parent2[parentIndex];
+      parentIndex++;
+    }
+
+    return child;
+  }
+
+  protected mutate(path: number[], mutationRate: number): number[] {
+    if (Math.random() > mutationRate) return path;
+
+    const newPath = [...path];
+    const index1 = Math.floor(Math.random() * newPath.length);
+    let index2 = Math.floor(Math.random() * newPath.length);
+    while (index2 === index1) {
+      index2 = Math.floor(Math.random() * newPath.length);
+    }
+
+    [newPath[index1], newPath[index2]] = [newPath[index2], newPath[index1]];
+    return newPath;
   }
 
   // Основний метод виконання алгоритму
@@ -164,43 +203,5 @@ const generateRandomPath = (points: Point[]): number[] => {
     [path[i], path[j]] = [path[j], path[i]];
   }
   return path;
-};
-
-const crossover = (parent1: number[], parent2: number[]): number[] => {
-  const start = Math.floor(Math.random() * parent1.length);
-  const end = Math.floor(Math.random() * (parent1.length - start)) + start;
-
-  const child = new Array(parent1.length).fill(-1);
-
-  for (let i = start; i <= end; i++) {
-    child[i] = parent1[i];
-  }
-
-  let parentIndex = 0;
-  for (let i = 0; i < child.length; i++) {
-    if (i >= start && i <= end) continue;
-
-    while (child.includes(parent2[parentIndex])) {
-      parentIndex++;
-    }
-    child[i] = parent2[parentIndex];
-    parentIndex++;
-  }
-
-  return child;
-};
-
-const mutate = (path: number[], mutationRate: number): number[] => {
-  if (Math.random() > mutationRate) return path;
-
-  const newPath = [...path];
-  const index1 = Math.floor(Math.random() * newPath.length);
-  let index2 = Math.floor(Math.random() * newPath.length);
-  while (index2 === index1) {
-    index2 = Math.floor(Math.random() * newPath.length);
-  }
-
-  [newPath[index1], newPath[index2]] = [newPath[index2], newPath[index1]];
-  return newPath;
 };
 
