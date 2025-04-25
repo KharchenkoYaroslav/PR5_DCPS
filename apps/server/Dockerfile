@@ -1,12 +1,17 @@
 # Build stage
-FROM node:18 as builder
+FROM node:18-alpine as builder
+
+# Install necessary build tools
+RUN apk add --no-cache python3 make g++
 
 WORKDIR /app
-COPY package*.json ./
 
-# Install dependencies
-RUN npm config set registry https://registry.npmjs.org/
-RUN npm install --legacy-peer-deps
+# Copy package files
+COPY package*.json .npmrc ./
+
+# Install dependencies with increased memory limit
+ENV NODE_OPTIONS=--max-old-space-size=4096
+RUN npm ci --legacy-peer-deps
 
 # Copy source
 COPY . .
@@ -19,12 +24,12 @@ FROM node:18-alpine
 
 WORKDIR /app
 
-# Copy built server files
+# Copy built server files and package files
 COPY --from=builder /app/dist/apps/server ./
 COPY --from=builder /app/package*.json ./
 
 # Install production dependencies
-RUN npm install --omit=dev --legacy-peer-deps
+RUN npm ci --omit=dev --legacy-peer-deps
 
 # Expose the port
 EXPOSE 3000
