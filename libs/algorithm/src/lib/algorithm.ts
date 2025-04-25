@@ -69,7 +69,7 @@ export class TSPSolver {
     const parents = this.selectParents(currentPopulation);
     const offspring = this.createOffspring(parents);
 
-    const newRoutes = this.evaluateFitness([...parents, ...offspring]);
+    const newRoutes = [...parents, ...offspring].sort((a, b) => a.distance - b.distance);
 
     return {
       id: currentPopulation.id,
