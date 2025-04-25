@@ -66,11 +66,9 @@ export class TSPSolver {
 
   // Вибір для наступної популяції
   protected selectNextGeneration(currentPopulation: Population): Population {
-    // Використовуємо поточні маршрути без сортування
     const parents = this.selectParents(currentPopulation);
     const offspring = this.createOffspring(parents);
 
-    // Сортуємо тільки фінальний результат
     const newRoutes = this.evaluateFitness([...parents, ...offspring]);
 
     return {
