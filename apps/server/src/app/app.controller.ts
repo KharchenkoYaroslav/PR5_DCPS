@@ -17,6 +17,14 @@ export class AppController {
       version: '1.0.0'
     };
   }
+
+  @Get('health')
+  getHealthCheck() {
+    return {
+      status: 'ok',
+      timestamp: new Date().toISOString()
+    };
+  }
 }
 
 @Controller('tsp')
