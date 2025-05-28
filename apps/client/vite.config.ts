@@ -12,7 +12,7 @@ export default defineConfig(() => ({
     host: 'localhost',
     proxy: {
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'https://pr5-dcps.onrender.com',
         changeOrigin: true,
       },
     },
