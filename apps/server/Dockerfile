@@ -1,35 +1,32 @@
-# Build stage
-FROM node:18-alpine as builder
+FROM node:22-bookworm-slim AS builder
 
 WORKDIR /app
+ENV NX_DAEMON=false
 
-# Copy package files
-COPY package*.json .npmrc ./
+COPY package*.json ./
+RUN npm ci
 
-# Install dependencies with increased memory limit
-ENV NODE_OPTIONS=--max-old-space-size=4096
-RUN npm ci --legacy-peer-deps
-
-# Copy source
 COPY . .
-
-# Build server
 RUN npx nx build server
 
-# Production stage
-FROM node:18-alpine
-
+FROM node:22-bookworm-slim AS deps
 WORKDIR /app
 
-# Copy built server files and package files
-COPY --from=builder /app/dist/apps/server ./
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/dist/apps/server/package.json ./
 
-# Install production dependencies
-RUN npm ci --omit=dev --legacy-peer-deps
+RUN npm install --omit=dev --ignore-scripts
 
-# Expose the port
+FROM node:22-bookworm-slim AS runner
+
+WORKDIR /app
+ENV NODE_ENV=production
+
+USER node
+
+COPY --from=deps --chown=node:node /app/node_modules ./node_modules
+
+COPY --from=builder --chown=node:node /app/dist/apps/server ./
+
 EXPOSE 3000
 
-# Start the server
 CMD ["node", "main.js"]
